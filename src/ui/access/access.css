@@ -1,0 +1,144 @@
+/*
+ * Setting up and managing how this device opens Textor: onboarding, restoring
+ * a backup, and Settings → Security. Shipped with the access chunk and loaded
+ * with it, so none of this is in the precache (ADR-046, ADR-054).
+ */
+
+/* ---------------------------------------------------------------- choice -- */
+
+/*
+ * A radio group of cards. Each option is a sentence long, which a segmented
+ * control cannot hold, and the choice matters enough to be read in full.
+ */
+.choice-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.choice {
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  text-align: start;
+  color: inherit;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition:
+    background var(--transition),
+    border-color var(--transition);
+}
+
+.choice:hover {
+  background: var(--surface-hover);
+}
+
+.choice[aria-checked='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.choice:disabled {
+  cursor: not-allowed;
+}
+
+/* Unavailable here, and saying why: still readable, plainly not a choice. */
+.choice:disabled:not([aria-checked='true']) .choice-title {
+  color: var(--text-muted);
+}
+
+.choice-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--weight-medium);
+}
+
+/* -------------------------------------------------------------- strength -- */
+
+.strength-meter {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-1);
+}
+
+.strength-meter > span {
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: var(--surface-3);
+  transition: background var(--transition);
+}
+
+.strength-meter[data-tone='weak'] > span[data-filled='true'] {
+  background: var(--danger);
+}
+.strength-meter[data-tone='fair'] > span[data-filled='true'] {
+  background: var(--warning);
+}
+.strength-meter[data-tone='good'] > span[data-filled='true'] {
+  background: var(--success);
+}
+
+.strength-label {
+  font-weight: var(--weight-semibold);
+}
+.strength-weak {
+  color: var(--danger);
+}
+.strength-fair {
+  color: var(--warning);
+}
+.strength-good {
+  color: var(--success);
+}
+
+/* ------------------------------------------------------------- welcome -- */
+
+/* A short rule under the eyebrow, the one decorative element in the app. */
+.entry-eyebrow {
+  display: block;
+  font-size: var(--step--2);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--accent-text);
+}
+
+:root[dir='rtl'] .entry-eyebrow {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* The three promises on the welcome screen. */
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feature-list li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--space-3);
+  font-size: var(--step-0);
+  color: var(--text-muted);
+  line-height: var(--leading-snug);
+}
+
+.feature-icon {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  flex-shrink: 0;
+}

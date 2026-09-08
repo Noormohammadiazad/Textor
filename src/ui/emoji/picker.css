@@ -1,0 +1,130 @@
+/*
+ * The emoji and sticker picker's insides, which arrive with its chunk. The
+ * card they sit in — `.picker`, sized so it does not change shape when they
+ * load — stays in the shell's stylesheet with the placeholder shown until
+ * then.
+ */
+
+.picker-tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-block-end: var(--border-width) solid var(--border-subtle);
+}
+
+.picker-tab {
+  flex: 1;
+  padding-block: var(--space-1);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--step--1);
+  cursor: pointer;
+}
+
+.picker-tab.active {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: var(--weight-medium);
+}
+
+.picker-panel {
+  overflow-y: auto;
+  /* `min-height: 0` is what actually lets this scroll: a flex item defaults to
+     `min-height: auto`, which refuses to shrink below its content and pushes
+     the overflow outside the card instead of scrolling inside it. */
+  min-height: 0;
+  /* Scrolling to the end of the list must not then scroll the conversation. */
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: var(--space-2);
+}
+
+.picker-group + .picker-group {
+  margin-block-start: var(--space-3);
+}
+
+.picker-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-1);
+  font-size: var(--step--2);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(2rem, 1fr));
+  gap: var(--space-0-5);
+}
+
+.picker-grid.stickers {
+  grid-template-columns: repeat(auto-fill, minmax(3.5rem, 1fr));
+  gap: var(--space-1);
+}
+
+.picker-emoji {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.picker-emoji:hover {
+  background: var(--surface-hover);
+}
+
+.picker-sticker {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  cursor: pointer;
+}
+
+.picker-sticker:hover {
+  border-color: var(--border);
+  background: var(--surface-hover);
+}
+
+.picker-sticker img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.picker-sticker-loading {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.picker-empty {
+  margin: var(--space-3) 0;
+  text-align: center;
+}
+
+.picker-import {
+  align-self: center;
+  margin-block: var(--space-3) var(--space-1);
+  cursor: pointer;
+}

@@ -1,0 +1,12 @@
+/*
+ * The scanner's frame, shipped with the QR chunk and loaded with it, so none of
+ * this is in the precache (ADR-046).
+ */
+
+.scanner-reticle {
+  position: absolute;
+  inset: 12%;
+  border: 2px solid rgb(255 255 255 / 0.85);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.35);
+}

@@ -1,0 +1,20 @@
+/* A contact's safety number, which only the verify screen shows. */
+
+.safety-number {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  letter-spacing: 0.05em;
+  text-align: center;
+  direction: ltr;
+}
+
+.safety-emoji {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--step-2);
+  direction: ltr;
+}

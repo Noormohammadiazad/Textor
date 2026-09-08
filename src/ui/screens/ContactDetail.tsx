@@ -1,0 +1,174 @@
+import { useState } from 'react'
+import { useApp } from '../../app/store'
+import { useI18n } from '../../i18n'
+import { goBack, useNavigate } from '../../app/router'
+import { Avatar, Banner, EmptyState, Field, IdButton, PublicKey } from '../components/primitives'
+import { confirmDanger } from '../components/dialog'
+import { BackIcon, TrashIcon } from '../components/Icons'
+import { shownId, toNpub } from '../../core/identity/keys'
+import { relayLabel } from '../../core/transport/relayUrl'
+import { formatDateTime } from '../format'
+import { displayName } from './ChatList'
+import { usePeopleText } from './peopleText'
+
+/**
+ * One contact: their name and note, their ID, verifying and blocking them.
+ * Reached from the contact list, and not on the way to answering a message, so
+ * it is lazy (ADR-058).
+ */
+export function ContactDetail({ peer }: { peer: string }) {
+  const { t, locale } = useI18n()
+  const pt = usePeopleText()
+  const navigate = useNavigate()
+  const contacts = useApp((s) => s.contacts)
+  const updateContact = useApp((s) => s.updateContact)
+  const removeContact = useApp((s) => s.removeContact)
+  const setPinned = useApp((s) => s.setPinned)
+  const pinned = useApp((s) => s.conversations.some((c) => c.peerPubkey === peer && c.pinned))
+
+  const contact = contacts.get(peer)
+  const [note, setNote] = useState(contact?.note ?? '')
+
+  const back = (
+    <button className="btn btn-icon btn-back" aria-label={t('common.back')} onClick={() => goBack()}>
+      <BackIcon />
+    </button>
+  )
+
+  // Removed on another screen, or a link to someone never added: still a
+  // page with a way back, not a dead end.
+  if (!contact) {
+    return (
+      <div className="screen">
+        <header className="app-header">{back}</header>
+        <EmptyState title={t('common.unknown')} />
+      </div>
+    )
+  }
+
+  const label = displayName(contact, peer)
+  const theirId = shownId(contact.textorId)
+
+  return (
+    <div className="screen">
+      <header className="app-header">
+        {back}
+        <h1 className="grow truncate">
+          <bdi>{label}</bdi>
+        </h1>
+      </header>
+
+      <div className="screen-scroll">
+        <div className="container stack" style={{ maxWidth: '32rem' }}>
+          <div className="stack-sm center">
+            <div style={{ display: 'grid', placeItems: 'center' }}>
+              <Avatar name={label} seed={peer} src={contact.avatar} size="lg" />
+            </div>
+            <h2 style={{ fontSize: 'var(--step-1)' }}>
+              <bdi>{label}</bdi>
+            </h2>
+            {contact.about ? <p className="muted small">{contact.about}</p> : null}
+            <span className={`badge ${contact.verification === 'verified' ? 'badge-success' : ''}`}>
+              {contact.verification === 'verified' ? t('contacts.verified') : pt('unverified')}
+            </span>
+            {theirId ? <IdButton id={theirId} /> : <p className="hint">{pt('noId')}</p>}
+          </div>
+
+          <div className="row">
+            <button
+              className="btn btn-primary grow"
+              onClick={() => navigate({ name: 'chat', peer })}
+              disabled={contact.blocked}
+            >
+              {t('nav.chats')}
+            </button>
+            <button className="btn btn-outline grow" onClick={() => navigate({ name: 'verify', peer })}>
+              {t('contacts.verify')}
+            </button>
+          </div>
+
+          <button className="btn btn-outline btn-block" onClick={() => setPinned(peer, !pinned)}>
+            {pinned ? pt('unpin') : pt('pin')}
+          </button>
+
+          <div className="card stack">
+            <Field label={pt('nameLabel')}>
+              {/* Keyed: a name set on another device replaces what is shown, so leaving
+                  this field cannot put the old one back. */}
+              <input
+                key={`name:${contact.name}`}
+                className="input"
+                defaultValue={contact.name}
+                maxLength={64}
+                onBlur={(event) => {
+                  if (event.target.value !== contact.name) {
+                    void updateContact(peer, { name: event.target.value })
+                  }
+                }}
+              />
+            </Field>
+            <Field label={pt('noteLabel')} hint={pt('noteHint')}>
+              <textarea
+                className="textarea"
+                style={{ minHeight: '3.5rem' }}
+                value={note}
+                maxLength={500}
+                onChange={(event) => setNote(event.target.value)}
+                onBlur={() => {
+                  if (note !== (contact.note ?? '')) void updateContact(peer, { note })
+                }}
+              />
+            </Field>
+          </div>
+
+          <div className="card stack-sm">
+            {contact.relays.length > 0 ? (
+              <p className="faint">{contact.relays.map(relayLabel).join(' · ')}</p>
+            ) : null}
+            <p className="faint">
+              {t('common.add')}: {formatDateTime(contact.addedAt, locale)}
+            </p>
+            <PublicKey npub={toNpub(peer)} />
+          </div>
+
+          {contact.blocked ? (
+            <Banner tone="danger">
+              <span className="grow">{t('chat.blocked')}</span>
+              <button
+                className="btn btn-ghost small"
+                onClick={() => void updateContact(peer, { blocked: false })}
+              >
+                {t('chat.unblock')}
+              </button>
+            </Banner>
+          ) : (
+            <button
+              className="btn btn-outline btn-block"
+              onClick={async () => {
+                if (await confirmDanger(t('chat.block'), t('chat.block'), pt('blockConfirm'))) {
+                  void updateContact(peer, { blocked: true })
+                }
+              }}
+            >
+              {t('chat.block')}
+            </button>
+          )}
+
+          <button
+            className="btn btn-danger btn-block"
+            onClick={async () => {
+              if (!(await confirmDanger(t('common.remove'), t('common.remove'), pt('removeConfirm')))) {
+                return
+              }
+              void removeContact(peer)
+              navigate({ name: 'contacts' }, true)
+            }}
+          >
+            <TrashIcon size={16} />
+            {t('common.remove')}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
