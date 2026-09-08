@@ -1,0 +1,1479 @@
+/* Conversation view: message list, bubbles, composer. */
+
+.chat-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  padding-top: max(var(--space-2), env(safe-area-inset-top));
+  background: var(--surface);
+  border-bottom: var(--border-width) solid var(--border);
+  min-height: var(--header-height);
+  flex-shrink: 0;
+}
+
+.chat-header-info {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  cursor: pointer;
+  text-align: start;
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 0;
+}
+
+.chat-header-name {
+  font-weight: var(--weight-semibold);
+  font-size: var(--step-0);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.chat-header-status {
+  font-size: var(--step--1);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.message-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-4) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scrollbar-width: thin;
+}
+
+.day-separator {
+  align-self: center;
+  margin-block: var(--space-4) var(--space-2);
+  padding: 0.2rem 0.7rem;
+  border-radius: var(--radius-full);
+  background: var(--surface-3);
+  color: var(--text-muted);
+  font-size: var(--step--2);
+  font-weight: var(--weight-medium);
+}
+
+/*
+ * A call, as a bubble on the side of whoever placed it: what it was, when and
+ * how it went, with calling back one tap away at its end.
+ *
+ * Colour marks the outcome only where it holds contrast — an incoming bubble.
+ * The outgoing bubble is the accent, on which neither green nor red can be
+ * read, so there the words carry it alone, as they do everywhere anyway.
+ */
+.call-bubble {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: min(13rem, 100%);
+  padding-block: 0.55rem;
+  white-space: normal;
+}
+
+.call-bubble-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.call-bubble-title {
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.bubble-row.in .call-bubble[data-missed] .call-bubble-title {
+  color: var(--danger);
+}
+
+.call-bubble-detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: var(--step--1);
+}
+
+.bubble-row.in .call-bubble-detail {
+  color: var(--text-muted);
+}
+
+.bubble-row.out .call-bubble-detail {
+  opacity: 0.85;
+}
+
+.call-bubble-arrow {
+  flex-shrink: 0;
+}
+
+.bubble-row.in .call-bubble[data-outcome='connected'] .call-bubble-arrow {
+  color: var(--success);
+}
+
+.bubble-row.in .call-bubble[data-outcome='not-connected'] .call-bubble-arrow {
+  color: var(--danger);
+}
+
+.call-bubble-back {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.bubble-row.out .call-bubble-back {
+  background: rgb(255 255 255 / 0.16);
+  color: inherit;
+}
+
+/* Only a glyph when this person cannot be called from here. */
+span.call-bubble-back {
+  opacity: 0.6;
+}
+
+button.call-bubble-back {
+  cursor: pointer;
+  transition:
+    background var(--transition),
+    transform var(--duration-instant) var(--ease-out);
+}
+
+button.call-bubble-back:hover {
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--accent));
+}
+
+.bubble-row.out button.call-bubble-back:hover {
+  background: rgb(255 255 255 / 0.26);
+}
+
+button.call-bubble-back:active {
+  transform: scale(0.94);
+}
+
+/* The ring colour is the accent, which is the outgoing bubble's own fill. */
+.bubble-row.out button.call-bubble-back:focus-visible {
+  outline-color: currentColor;
+}
+
+.convo-preview-missed {
+  color: var(--danger);
+}
+
+.bubble-row {
+  display: flex;
+  max-width: min(78%, 34rem);
+  scroll-margin-block: var(--space-5);
+}
+
+.bubble-row.out {
+  align-self: flex-end;
+}
+.bubble-row.in {
+  align-self: flex-start;
+}
+
+/* Extra gap between speakers, tight within a run from one speaker. */
+.bubble-row.group-start {
+  margin-top: var(--space-3);
+}
+
+.bubble {
+  position: relative;
+  padding: 0.5rem 0.75rem 0.4rem;
+  border-radius: var(--radius-bubble);
+  font-size: var(--step-0);
+  line-height: 1.45;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+}
+
+.bubble-row.out .bubble {
+  background: var(--bubble-out);
+  color: var(--bubble-out-text);
+  border-end-end-radius: var(--radius-xs);
+}
+
+.bubble-row.in .bubble {
+  background: var(--bubble-in);
+  color: var(--bubble-in-text);
+  border-end-start-radius: var(--radius-xs);
+}
+
+.bubble-row.failed .bubble {
+  outline: 1px solid var(--danger);
+}
+
+.bubble-quote {
+  display: block;
+  margin-bottom: 0.35rem;
+  padding: 0.3rem 0.5rem;
+  border-inline-start: 3px solid currentColor;
+  border-radius: var(--radius-sm);
+  background: rgb(255 255 255 / 0.12);
+  font-size: var(--step--1);
+  opacity: 0.85;
+  max-height: 3.4em;
+  overflow: hidden;
+}
+
+.bubble-row.in .bubble-quote {
+  background: var(--surface-2);
+}
+
+.bubble-body {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bubble-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.3rem;
+  margin-top: 0.15rem;
+  font-size: var(--step--2);
+  opacity: 0.75;
+  user-select: none;
+}
+
+.bubble-row.out .bubble-body {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bubble-meta {
+  color: inherit;
+}
+
+.tick {
+  display: inline-flex;
+  align-items: center;
+}
+
+.tick-read {
+  color: #9fdcff;
+}
+
+:root[data-theme='light'] .bubble-row.out .tick-read {
+  color: #b7e5ff;
+}
+
+.typing-indicator {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.6rem 0.85rem;
+  margin-top: var(--space-2);
+  background: var(--bubble-in);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  animation: typing-bounce 1.2s infinite ease-in-out;
+}
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------- composer -- */
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  padding-bottom: max(var(--space-2), env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: var(--border-width) solid var(--border);
+  flex-shrink: 0;
+}
+
+.composer-input {
+  flex: 1;
+  min-height: 2.5rem;
+  max-height: 9rem;
+  padding: 0.55rem 0.85rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  resize: none;
+  line-height: 1.45;
+  overflow-y: auto;
+  font-family: inherit;
+}
+
+.composer-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 var(--ring-width) var(--accent-soft);
+}
+
+.composer-send {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background var(--transition),
+    transform var(--transition);
+}
+
+.composer-send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.composer-send:not(:disabled):hover {
+  background: var(--accent-hover);
+}
+.composer-send:not(:disabled):active {
+  transform: scale(0.94);
+}
+
+/* The send glyph points along the reading direction. */
+:root[dir='rtl'] .composer-send svg {
+  transform: scaleX(-1);
+}
+
+.reply-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-2);
+  border-top: var(--border-width) solid var(--border);
+  font-size: var(--step--1);
+}
+
+.reply-preview-body {
+  flex: 1;
+  min-width: 0;
+  border-inline-start: 3px solid var(--accent);
+  padding-inline-start: var(--space-2);
+}
+
+/* --------------------------------------------------------- conversation -- */
+
+.convo-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: start;
+  color: inherit;
+  transition: background var(--transition);
+}
+
+.convo-row:hover {
+  background: var(--surface-2);
+}
+
+.convo-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.convo-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.convo-name {
+  font-weight: var(--weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.convo-time {
+  font-size: var(--step--2);
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+
+.convo-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--step--1);
+}
+
+.convo-preview-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------- qr/etc -- */
+
+.qr-frame {
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: #fff;
+  border-radius: var(--radius-lg);
+  width: fit-content;
+  margin-inline: auto;
+}
+
+.qr-frame svg {
+  width: min(15rem, 60vw);
+  height: auto;
+}
+
+/* Same footprint as the code it stands in for, so nothing below it moves. */
+.qr-pending-square {
+  display: block;
+  width: min(15rem, 60vw);
+  aspect-ratio: 1;
+}
+
+.scanner-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 22rem;
+  margin-inline: auto;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #000;
+}
+
+.scanner-frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scanner-reticle {
+  position: absolute;
+  inset: 12%;
+  border: 2px solid rgb(255 255 255 / 0.85);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.35);
+}
+
+.safety-number {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  letter-spacing: 0.05em;
+  text-align: center;
+  direction: ltr;
+}
+
+.security-code {
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  letter-spacing: 0.05em;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.safety-emoji {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--step-2);
+  direction: ltr;
+}
+
+.mnemonic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: var(--space-2);
+}
+
+.mnemonic-word {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: 0.4rem 0.65rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  direction: ltr;
+}
+
+.mnemonic-word span {
+  color: var(--text-faint);
+  font-size: var(--step--2);
+  min-width: 1.1rem;
+  text-align: end;
+}
+
+.blurred {
+  filter: blur(7px);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------- desktop -- */
+
+@media (min-width: 60rem) {
+  .app-shell.split {
+    flex-direction: row;
+  }
+
+  .sidebar {
+    width: 22rem;
+    flex-shrink: 0;
+    border-inline-end: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .sidebar .tabbar {
+    border-top: var(--border-width) solid var(--border);
+  }
+
+  .detail {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .message-list {
+    padding-inline: var(--space-5);
+  }
+}
+
+/* ------------------------------------------------------- message actions -- */
+
+/*
+ * Beside the bubble, not on top of it.
+ *
+ * Overlaying the top-inline-end corner put the controls over the first line of
+ * text — worst on a short incoming message, where they covered most of it. In
+ * the gutter they never collide with content, and the row already reserves the
+ * space.
+ */
+.bubble-actions {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 100%;
+  transform: translateY(-50%);
+  margin-inline-end: var(--space-1);
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.bubble-row.in .bubble-actions {
+  /* Incoming bubbles sit at the start edge, so their gutter is the other side. */
+  inset-inline-end: auto;
+  inset-inline-start: 100%;
+  margin-inline: var(--space-1) 0;
+}
+
+.bubble:hover .bubble-actions,
+.bubble:focus-within .bubble-actions {
+  opacity: 1;
+}
+
+/* Touch devices have no hover, so the affordance must always be reachable. */
+@media (hover: none) {
+  .bubble-actions {
+    opacity: 0.55;
+  }
+}
+
+.bubble-action {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.bubble-action:hover {
+  opacity: 1;
+  background: rgb(127 127 127 / 0.2);
+}
+
+/*
+ * Portalled to the body and positioned by Popover, which measures the trigger
+ * and flips or clamps to stay on screen. Nothing here may assume a side.
+ */
+.popover {
+  position: fixed;
+  z-index: 80;
+  min-width: 12rem;
+  max-width: min(18rem, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-1);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  text-align: start;
+}
+
+.popover {
+  animation: popover-in var(--duration-fast) var(--ease-out);
+}
+
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+/*
+ * Direct children only.
+ *
+ * As a descendant selector this styled every button *inside* the popover,
+ * including each cell of the emoji grid and each quick reaction — giving them
+ * a menu row's 8px/12px padding, column layout and full width, which is what
+ * pushed the grid out of its card. A menu row is a direct child; grids bring
+ * their own.
+ */
+.popover > button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: var(--step--1);
+  text-align: start;
+  width: 100%;
+}
+
+.popover > button:hover,
+.popover > button:focus-visible {
+  background: var(--surface-2);
+}
+
+.popover > button .hint {
+  font-size: var(--step--2);
+  color: var(--text-muted);
+}
+
+.popover > .menuitem-danger {
+  color: var(--danger);
+}
+
+.popover > .menuitem-danger .hint {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.bubble-failed {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-end;
+  margin-top: 2px;
+}
+
+/* -------------------------------------------------------- attachments -- */
+/*
+ * Attachment rendering inside a bubble.
+ *
+ * Everything here has to survive the payload not having arrived yet, so each
+ * variant reserves its final size from the descriptor — aspect ratio for a
+ * picture, bar count for a voice note. Nothing reflows when the bytes land.
+ */
+
+.attachment-progress {
+  position: absolute;
+  inset-inline: var(--space-2);
+  inset-block-end: var(--space-2);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------- voice -- */
+
+.voice-note {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 13rem;
+  padding-block: var(--space-1);
+}
+
+.voice-play {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--accent-fg);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.bubble-row.out .voice-play {
+  /* Inside an outgoing bubble the accent is already the background, so the
+     control has to invert to stay visible. */
+  background: var(--bubble-out-text);
+  color: var(--bubble-out);
+}
+
+.voice-play:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.voice-wave {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 1.75rem;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.voice-bar {
+  flex: 1;
+  min-width: 2px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  /* Unplayed bars are ghosted rather than a second colour, so the control
+     reads correctly inside both bubble fills without a variant per theme. */
+  opacity: 0.3;
+  transition: opacity var(--duration-fast) linear;
+}
+
+.voice-bar[data-played='true'] {
+  opacity: 0.95;
+}
+
+.voice-bar-fallback {
+  flex: 1;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  opacity: 0.35;
+}
+
+.voice-time {
+  font-size: var(--step--2);
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+
+/* ------------------------------------------------------- image/video -- */
+
+.attachment-image {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 17rem;
+  overflow: hidden;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--surface-3);
+  cursor: pointer;
+}
+
+.attachment-image:disabled {
+  cursor: progress;
+}
+
+/* The inline preview is a couple of dozen pixels, so it is blurred rather
+   than shown sharp — a recognisable impression, not a thumbnail. */
+.attachment-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(12px);
+  transform: scale(1.15);
+}
+
+.attachment-full {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  animation: attachment-in var(--duration-slow) var(--ease-out);
+}
+
+@keyframes attachment-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: var(--overlay);
+  cursor: zoom-out;
+  animation: fade-in var(--duration-fast) var(--ease-out);
+}
+
+.lightbox img {
+  max-width: 100%;
+  max-height: 92dvh;
+  border-radius: var(--radius-md);
+  object-fit: contain;
+}
+
+/* -------------------------------------------------------------- file -- */
+
+.attachment-file {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 13rem;
+  padding-block: var(--space-1);
+}
+
+.attachment-file-icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.attachment-file-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.attachment-file-name {
+  font-weight: var(--weight-medium);
+}
+
+.attachment-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--step--1);
+  opacity: 0.85;
+}
+
+/* --------------------------------------------------------- recording -- */
+
+.composer-action {
+  display: grid;
+  place-items: center;
+  width: var(--control-lg);
+  height: var(--control-lg);
+  flex-shrink: 0;
+  align-self: flex-end;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background var(--transition),
+    color var(--transition);
+}
+
+.composer-action:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.composer-action:active:not(:disabled) {
+  transform: translateY(1px);
+  transition-duration: var(--duration-instant);
+}
+
+.composer-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.recording-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.recording-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  animation: recording-pulse 1.2s var(--ease-in-out) infinite;
+}
+
+@keyframes recording-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.recording-time {
+  font-size: var(--step--1);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Live input level. Scales from the start edge, so it grows the way the
+   reader's language runs. */
+.recording-meter {
+  flex: 1;
+  height: 3px;
+  min-width: 2rem;
+  border-radius: var(--radius-full);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.recording-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transform-origin: left center;
+  transition: transform 80ms linear;
+}
+
+:root[dir='rtl'] .recording-meter > span {
+  transform-origin: right center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recording-dot {
+    animation: none;
+  }
+}
+
+/* --- reactions -------------------------------------------------------------
+ *
+ * The bar sits inside the bubble, below the text and above the timestamp row,
+ * so a reaction reads as belonging to the message rather than floating between
+ * two of them. Counts use logical properties throughout: in Persian the bar
+ * runs from the right and nothing needs mirroring by hand.
+ */
+
+.reaction-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-block-start: var(--space-2);
+  /* A bubble is only as wide as its text; a long run of reactions wraps inside
+     it rather than stretching it or spilling past its edge. */
+  max-width: 100%;
+}
+
+.reaction {
+  max-width: 100%;
+}
+
+.reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-block: 1px;
+  padding-inline: var(--space-2);
+  border: var(--border-width) solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--step--1);
+  line-height: 1.5;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.reaction:hover {
+  background: var(--surface-hover);
+}
+
+/* Our own reaction is a pressed control, not merely a highlighted one: it
+   toggles, and the border carries that without relying on colour alone. */
+.reaction-mine {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.reaction-count {
+  font-size: var(--step--2);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.reaction-mine .reaction-count {
+  color: var(--accent);
+}
+
+.bubble-action-emoji,
+.composer-emoji {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.quick-reactions {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+}
+
+.quick-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--control-md);
+  height: var(--control-md);
+  padding: 0;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.quick-emoji:hover {
+  background: var(--surface-hover);
+}
+
+.quick-emoji.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* --- the emoji and sticker picker ------------------------------------------
+ *
+ * Sized so the panel is the same shape before and after the lazy chunk
+ * arrives: a panel that grows on load would move under the pointer aiming at
+ * it. The popover positions it; this only decides how big it is.
+ */
+
+/*
+ * The card and its contents are sized from one value, so they cannot disagree:
+ * the picker was 20rem inside a popover capped at 18rem, and the difference
+ * spilled out of the card.
+ */
+.popover-picker {
+  --picker-width: min(21rem, calc(100vw - 2 * var(--space-4)));
+  max-width: var(--picker-width);
+  padding: 0;
+  overflow: hidden;
+}
+
+.picker {
+  width: var(--picker-width, min(18rem, calc(100vw - 2 * var(--space-4))));
+  /* Bounded by the shorter of a comfortable size and the space actually
+     available, so the card never runs past the bottom of a short window. */
+  max-height: min(22rem, calc(100vh - 8rem));
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.picker-loading {
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+  color: var(--text-muted);
+  font-size: var(--step--1);
+}
+
+.picker-tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-block-end: var(--border-width) solid var(--border-subtle);
+}
+
+.picker-tab {
+  flex: 1;
+  padding-block: var(--space-1);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--step--1);
+  cursor: pointer;
+}
+
+.picker-tab.active {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: var(--weight-medium);
+}
+
+.picker-panel {
+  overflow-y: auto;
+  /* `min-height: 0` is what actually lets this scroll: a flex item defaults to
+     `min-height: auto`, which refuses to shrink below its content and pushes
+     the overflow outside the card instead of scrolling inside it. */
+  min-height: 0;
+  /* Scrolling to the end of the list must not then scroll the conversation. */
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: var(--space-2);
+}
+
+.picker-group + .picker-group {
+  margin-block-start: var(--space-3);
+}
+
+.picker-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-1);
+  font-size: var(--step--2);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(2rem, 1fr));
+  gap: var(--space-0-5);
+}
+
+.picker-grid.stickers {
+  grid-template-columns: repeat(auto-fill, minmax(3.5rem, 1fr));
+  gap: var(--space-1);
+}
+
+.picker-emoji {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.picker-emoji:hover {
+  background: var(--surface-hover);
+}
+
+.picker-sticker {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  cursor: pointer;
+}
+
+.picker-sticker:hover {
+  border-color: var(--border);
+  background: var(--surface-hover);
+}
+
+.picker-sticker img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.picker-sticker-loading {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.picker-empty {
+  margin: var(--space-3) 0;
+  text-align: center;
+}
+
+.picker-import {
+  align-self: center;
+  margin-block: var(--space-3) var(--space-1);
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- groups -- */
+
+/* The people glyph inherits the avatar's white text colour. */
+.avatar-group {
+  color: #fff;
+}
+
+/* Who wrote a run of messages, in a group. Tinted rather than bold-black so it
+   reads as a label over the message, not as part of it. */
+.bubble-author {
+  display: block;
+  font-size: var(--step--1);
+  font-weight: var(--weight-semibold);
+  color: var(--accent-text);
+  margin-block-end: var(--space-0-5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tick-wrap {
+  display: inline-flex;
+}
+
+.group-hero {
+  align-items: center;
+  padding-block: var(--space-3);
+}
+
+.list-row.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------ polls, checklists -- */
+
+/*
+ * Drawn with currentColor so one set of rules reads on both bubbles: light
+ * lines on the accent-filled outgoing bubble, dark ones on the incoming one,
+ * in every theme, without a second palette to keep in step.
+ */
+.poll,
+.checklist {
+  display: grid;
+  gap: var(--space-2);
+  min-inline-size: min(16rem, 62vw);
+  white-space: normal;
+}
+
+.poll-question {
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+}
+
+.poll .hint,
+.checklist .hint {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.poll-options,
+.checklist-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.poll-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  inline-size: 100%;
+  min-block-size: var(--control-sm);
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width) solid color-mix(in srgb, currentColor 28%, transparent);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.poll-option:hover {
+  border-color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.poll-option.mine {
+  border-color: currentColor;
+}
+
+/* Fills from the reading edge: rightwards in English, leftwards in Persian. */
+.poll-bar {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: -1;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  transition: inline-size var(--duration-slow) var(--ease-out);
+}
+
+.poll-mark {
+  display: grid;
+  place-items: center;
+  inline-size: 1rem;
+  block-size: 1rem;
+  flex: none;
+  border: var(--border-width) solid color-mix(in srgb, currentColor 45%, transparent);
+  border-radius: var(--radius-full);
+}
+
+.poll-option.mine .poll-mark {
+  border-color: currentColor;
+}
+
+.poll-label {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.poll-count {
+  flex: none;
+  font-size: var(--step--1);
+  opacity: 0.8;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding-block: var(--space-0-5);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.checklist-item .checkbox {
+  margin-block-start: 0.2em;
+}
+
+.checklist-item.done > span {
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+
+.checklist-add {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.checklist-add .input {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: var(--control-sm);
+  padding-block: var(--space-1);
+  font-size: var(--step--1);
+}
+
+.composer-lines {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poll-bar {
+    transition: none;
+  }
+}

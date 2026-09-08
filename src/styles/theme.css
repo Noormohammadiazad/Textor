@@ -1,0 +1,325 @@
+/*
+ * Design tokens.
+ *
+ * Three layers, in strict order:
+ *
+ *   1. Ramps      raw colour steps (--n-400, --blue-600). Theme-independent.
+ *                 Nothing outside this file may reference them.
+ *   2. Roles      semantic names (--surface, --text-muted, --ring) mapped from
+ *                 ramps. Every component references only these, so retuning a
+ *                 colour happens in exactly one place.
+ *   3. Metrics    spacing, radii, type scale, motion. Shared by both themes.
+ *
+ * The dark role map is written twice on purpose — once for the explicit
+ * `data-theme="dark"` override and once under `prefers-color-scheme` — because
+ * CSS cannot share a declaration block across an at-rule boundary. The
+ * duplication is only var-to-var mapping; the colours themselves live in the
+ * ramps above and are never repeated. `light-dark()` would collapse the two,
+ * but it would also raise the browser floor to Safari 17.5, which this app has
+ * no other reason to require.
+ *
+ * Contrast is not asserted in a comment here: `npm run check:tokens` parses
+ * this file, resolves every role in both themes, and fails the build if any
+ * pair drops below its WCAG target. Change a ramp step and the checker tells
+ * you what broke.
+ */
+
+:root {
+  /* ---------------------------------------------------------------- ramps -- */
+
+  /* Neutral. Very slightly cool, kept off pure blue so large surfaces read as
+     paper and ink rather than as a tinted UI. */
+  --n-0: #ffffff;
+  --n-25: #fafbfc;
+  --n-50: #f4f6f8;
+  --n-100: #eaeef2;
+  --n-150: #e0e4e9;
+  --n-200: #d5dae1;
+  --n-300: #b7bec9;
+  --n-350: #a6aebb;
+  --n-400: #929aa7;
+  --n-450: #8892a0;
+  --n-500: #666e7a;
+  --n-600: #525a66;
+  --n-700: #3d444e;
+  --n-800: #2b313a;
+  --n-850: #212630;
+  --n-900: #181c24;
+  --n-950: #0e1116;
+
+  /* Accent. A single restrained blue: authoritative at button weight, legible
+     as text on both canvases. */
+  --blue-100: #e4edfb;
+  --blue-200: #c6dbf6;
+  --blue-300: #8fb8ec;
+  --blue-400: #6da2e4;
+  --blue-500: #2f6fd0;
+  --blue-600: #1a56b8;
+  --blue-700: #14458f;
+  --blue-800: #123a72;
+  --blue-900: #16283f;
+
+  --green-100: #dcf2e5;
+  --green-400: #4fb583;
+  --green-600: #17724a;
+  --green-950: #102b1d;
+
+  --amber-100: #fbeed6;
+  --amber-400: #d9a441;
+  --amber-700: #855009;
+  --amber-950: #2c2211;
+
+  --red-100: #fbe6e4;
+  --red-400: #ef8b83;
+  --red-600: #b32a20;
+  --red-700: #8f2019;
+  --red-950: #2e1614;
+
+  /* --------------------------------------------------------------- metrics -- */
+
+  --font-sans: 'Inter Variable', 'Vazirmatn Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+
+  /* Fixed steps, not fluid ones. A viewport-interpolated body size means the
+     rhythm between label, body, and heading drifts as the window resizes; only
+     the display size, which has no neighbours to stay in proportion with,
+     scales. */
+  --step--2: 0.6875rem;
+  --step--1: 0.75rem;
+  --step-0: 0.875rem;
+  --step-1: 1rem;
+  --step-2: 1.25rem;
+  --step-3: clamp(1.5rem, 1.28rem + 0.9vw, 1.9rem);
+
+  /* Optical corrections: large text needs negative tracking to stop looking
+     loose, small text needs positive tracking to stay readable. */
+  --tracking-tight: -0.018em;
+  --tracking-snug: -0.008em;
+  --tracking-wide: 0.02em;
+  --tracking-caps: 0.06em;
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 680;
+
+  /* Strict 4px grid. Every padding, gap, and offset in the app is one of these. */
+  --space-0-5: 0.125rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  /* Tight radii. Generous rounding is the fastest way to make an interface look
+     generic; structure comes from alignment and 1px rules instead. */
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-md: 7px;
+  --radius-lg: 10px;
+  --radius-bubble: 12px;
+  --radius-full: 999px;
+
+  /* Control heights, so every button, input, and select in a row lines up. */
+  --control-sm: 1.75rem;
+  --control-md: 2.125rem;
+  --control-lg: 2.5rem;
+  --control-xl: 2.75rem;
+
+  --border-width: 1px;
+  --ring-width: 2px;
+  --ring-offset: 2px;
+
+  /* Motion. Short and mechanical: this is an interface, not an animation reel. */
+  --ease-out: cubic-bezier(0.16, 0.8, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.5, 0, 0.2, 1);
+  --duration-instant: 70ms;
+  --duration-fast: 130ms;
+  --duration-slow: 220ms;
+  --transition: var(--duration-fast) var(--ease-out);
+
+  --header-height: 3.25rem;
+  --content-max: 46rem;
+  --entry-max: 25rem;
+}
+
+/* ------------------------------------------------------------------ light -- */
+/* The default, so a failure to match any theme selector still lands somewhere
+   legible rather than on unresolved variables. */
+
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: var(--n-50);
+  --surface: var(--n-0);
+  --surface-2: var(--n-100);
+  --surface-3: var(--n-150);
+  --surface-hover: var(--n-50);
+  --surface-active: var(--n-100);
+  --surface-sunken: var(--n-100);
+
+  --border-subtle: var(--n-150);
+  --border: var(--n-200);
+  --border-strong: var(--n-450);
+
+  --text: var(--n-900);
+  --text-muted: var(--n-600);
+  --text-faint: var(--n-500);
+  --text-inverse: var(--n-0);
+
+  --accent: var(--blue-600);
+  --accent-hover: var(--blue-700);
+  --accent-active: var(--blue-800);
+  --accent-fg: var(--n-0);
+  --accent-soft: var(--blue-100);
+  --accent-soft-hover: var(--blue-200);
+  --accent-border: var(--blue-200);
+  --accent-text: var(--blue-700);
+  --ring: var(--blue-600);
+
+  --success: var(--green-600);
+  --success-soft: var(--green-100);
+  --warning: var(--amber-700);
+  --warning-soft: var(--amber-100);
+  --danger: var(--red-600);
+  --danger-hover: var(--red-700);
+  --danger-fg: var(--n-0);
+  --danger-soft: var(--red-100);
+
+  --bubble-out: var(--blue-600);
+  --bubble-out-text: var(--n-0);
+  --bubble-in: var(--n-0);
+  --bubble-in-text: var(--n-900);
+
+  --overlay: rgb(24 28 36 / 0.4);
+  --shadow-color: 220 30% 15%;
+  --shadow-strength: 1;
+}
+
+/* ------------------------------------------------------------------- dark -- */
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: var(--n-950);
+  --surface: var(--n-900);
+  --surface-2: var(--n-850);
+  --surface-3: var(--n-800);
+  --surface-hover: var(--n-850);
+  --surface-active: var(--n-800);
+  --surface-sunken: var(--n-950);
+
+  --border-subtle: var(--n-850);
+  --border: var(--n-700);
+  --border-strong: var(--n-500);
+
+  --text: var(--n-50);
+  --text-muted: var(--n-350);
+  --text-faint: var(--n-400);
+  --text-inverse: var(--n-950);
+
+  --accent: var(--blue-500);
+  --accent-hover: var(--blue-600);
+  --accent-active: var(--blue-700);
+  --accent-fg: var(--n-0);
+  --accent-soft: var(--blue-900);
+  --accent-soft-hover: var(--blue-800);
+  --accent-border: var(--blue-800);
+  --accent-text: var(--blue-300);
+  --ring: var(--blue-400);
+
+  --success: var(--green-400);
+  --success-soft: var(--green-950);
+  --warning: var(--amber-400);
+  --warning-soft: var(--amber-950);
+  --danger: var(--red-400);
+  --danger-hover: #f3a49d;
+  --danger-fg: var(--n-950);
+  --danger-soft: var(--red-950);
+
+  --bubble-out: #24558f;
+  --bubble-out-text: #eef4fc;
+  --bubble-in: var(--n-850);
+  --bubble-in-text: var(--n-50);
+
+  --overlay: rgb(4 6 9 / 0.66);
+  --shadow-color: 220 40% 2%;
+  --shadow-strength: 2.2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --bg: var(--n-950);
+    --surface: var(--n-900);
+    --surface-2: var(--n-850);
+    --surface-3: var(--n-800);
+    --surface-hover: var(--n-850);
+    --surface-active: var(--n-800);
+    --surface-sunken: var(--n-950);
+
+    --border-subtle: var(--n-850);
+    --border: var(--n-700);
+    --border-strong: var(--n-500);
+
+    --text: var(--n-50);
+    --text-muted: var(--n-350);
+    --text-faint: var(--n-400);
+    --text-inverse: var(--n-950);
+
+    --accent: var(--blue-500);
+    --accent-hover: var(--blue-600);
+    --accent-active: var(--blue-700);
+    --accent-fg: var(--n-0);
+    --accent-soft: var(--blue-900);
+    --accent-soft-hover: var(--blue-800);
+    --accent-border: var(--blue-800);
+    --accent-text: var(--blue-300);
+    --ring: var(--blue-400);
+
+    --success: var(--green-400);
+    --success-soft: var(--green-950);
+    --warning: var(--amber-400);
+    --warning-soft: var(--amber-950);
+    --danger: var(--red-400);
+    --danger-hover: #f3a49d;
+    --danger-fg: var(--n-950);
+    --danger-soft: var(--red-950);
+
+    --bubble-out: #24558f;
+    --bubble-out-text: #eef4fc;
+    --bubble-in: var(--n-850);
+    --bubble-in-text: var(--n-50);
+
+    --overlay: rgb(4 6 9 / 0.66);
+    --shadow-color: 220 40% 2%;
+    --shadow-strength: 2.2;
+  }
+}
+
+/* ------------------------------------------------------------- elevation -- */
+/*
+ * Composed from a single themed colour so dark mode gets a deeper, tighter
+ * shadow without a second set of literals. Surfaces are separated by a 1px
+ * rule first and a shadow only when they genuinely float above the page.
+ */
+
+:root {
+  --shadow-sm:
+    0 1px 1px hsl(var(--shadow-color) / calc(0.05 * var(--shadow-strength))),
+    0 1px 2px hsl(var(--shadow-color) / calc(0.06 * var(--shadow-strength)));
+  --shadow-md:
+    0 2px 4px hsl(var(--shadow-color) / calc(0.06 * var(--shadow-strength))),
+    0 6px 12px -2px hsl(var(--shadow-color) / calc(0.08 * var(--shadow-strength)));
+  --shadow-lg:
+    0 4px 8px hsl(var(--shadow-color) / calc(0.07 * var(--shadow-strength))),
+    0 16px 32px -8px hsl(var(--shadow-color) / calc(0.14 * var(--shadow-strength)));
+}
