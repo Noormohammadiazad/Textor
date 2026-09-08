@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <!-- Kept in step with the resolved theme by applyDisplayPrefs, which reads
+         the live --bg token so this value can never drift from the palette. -->
+    <meta name="theme-color" content="#f4f6f8" />
+    <meta
+      name="description"
+      content="Private, end-to-end-encrypted messaging that runs entirely in your browser. No accounts, no phone numbers, no servers we operate."
+    />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/icon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/icons/mask-icon.svg" color="#1a56b8" />
+    <title>Textor</title>
+    <!--CSP-->
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <div style="padding: 2rem; font-family: system-ui, sans-serif">
+        <h1>Textor needs JavaScript</h1>
+        <p>
+          All encryption happens in your browser, so there is no server-rendered fallback. Enable JavaScript
+          to continue.
+        </p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

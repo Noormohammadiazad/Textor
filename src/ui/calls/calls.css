@@ -1,0 +1,497 @@
+/*
+ * The call screen. Shipped with the call chunk and loaded with it, so none of
+ * this is in the precache (ADR-046).
+ *
+ * A call is dark whatever the theme: video reads best on black, and a white
+ * frame around a face at night is a torch. The incoming prompt, which sits
+ * over the app, follows the theme like any other dialog. Every offset is
+ * logical, so the self view, the controls and the minimise button all mirror
+ * in Persian without a rule of their own.
+ */
+
+/* ------------------------------------------------------------- full screen -- */
+
+/* A wrapper for the layer's parts, which lays nothing out itself. */
+.call-root {
+  display: contents;
+}
+
+.call-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  background: var(--n-950);
+  color: var(--n-0);
+  animation: call-in var(--duration-slow) var(--ease-out);
+}
+
+@keyframes call-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.call-stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.call-remote-video,
+.call-self-full {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--n-950);
+}
+
+/* A shared screen is read, not looked at: show all of it. */
+.call-remote-video[data-fit='contain'] {
+  object-fit: contain;
+}
+
+/* Before the call connects, your own picture fills the screen, dimmed. */
+.call-self-full {
+  opacity: 0.55;
+}
+
+.call-self-view {
+  position: absolute;
+  z-index: 2;
+  /* Just above the row of controls: their size, the padding under them, a gap. */
+  inset-block-end: calc(3.5rem + var(--space-5) + var(--space-3) + env(safe-area-inset-bottom));
+  inset-inline-end: var(--space-4);
+  width: clamp(5.5rem, 24vw, 10rem);
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: var(--border-width) solid color-mix(in srgb, var(--n-0) 22%, transparent);
+  box-shadow: var(--shadow-lg);
+  background: var(--n-900);
+}
+
+video[data-mirrored] {
+  transform: scaleX(-1);
+}
+
+.call-identity {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.call-identity .avatar {
+  --size: 7rem;
+  font-size: var(--step-3);
+}
+
+/* ------------------------------------------------------------------- top -- */
+
+.call-top {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: calc(var(--space-3) + env(safe-area-inset-top)) var(--space-4) var(--space-6);
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.6), transparent);
+}
+
+.call-heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  /*
+   * Hug the reading start. A name is isolated in its own direction, so a
+   * Latin name stretched across a Persian heading would align to the left
+   * of its box — away from the clock under it.
+   */
+  align-items: flex-start;
+  gap: var(--space-0-5);
+}
+
+.call-name {
+  max-width: 100%;
+  font-size: var(--step-2);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.call-status {
+  font-size: var(--step-0);
+  color: color-mix(in srgb, var(--n-0) 78%, transparent);
+}
+
+/* A running clock should not jitter as its digits change. */
+.call-clock {
+  font-variant-numeric: tabular-nums;
+}
+
+.call-icon-button {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: var(--control-lg);
+  height: var(--control-lg);
+  border: none;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--n-0) 14%, transparent);
+  color: var(--n-0);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.call-icon-button:hover {
+  background: color-mix(in srgb, var(--n-0) 22%, transparent);
+}
+
+.call-icon-button:active {
+  background: color-mix(in srgb, var(--n-0) 30%, transparent);
+}
+
+.call-icon-button:focus-visible,
+.call-button:focus-visible {
+  outline: var(--ring-width) solid var(--n-0);
+  outline-offset: var(--ring-offset);
+}
+
+.call-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--n-0) 14%, transparent);
+  color: var(--n-0);
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.call-path {
+  flex-shrink: 0;
+}
+
+.call-chip-warning {
+  background: var(--amber-400);
+  color: var(--n-950);
+}
+
+/* --------------------------------------------------------------- notices -- */
+
+.call-notices {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-4);
+  text-align: center;
+}
+
+.call-note {
+  max-width: 26rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--n-950) 70%, transparent);
+  color: color-mix(in srgb, var(--n-0) 88%, transparent);
+  font-size: var(--step--1);
+  line-height: var(--leading-snug);
+}
+
+/* -------------------------------------------------------------- controls -- */
+
+.call-controls {
+  position: relative;
+  z-index: 3;
+  margin-block-start: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-4) calc(var(--space-5) + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, rgb(0 0 0 / 0.6), transparent);
+}
+
+.call-button {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--n-0) 16%, transparent);
+  color: var(--n-0);
+  cursor: pointer;
+  transition:
+    background var(--transition),
+    transform var(--duration-instant) var(--ease-out);
+}
+
+.call-button:hover {
+  background: color-mix(in srgb, var(--n-0) 24%, transparent);
+}
+
+.call-button:active {
+  transform: scale(0.95);
+}
+
+/* Pressed means "this is off": muted, camera off, sharing. Inverted so it reads at a glance. */
+.call-button[aria-pressed='true'] {
+  background: var(--n-0);
+  color: var(--n-950);
+}
+
+.call-button-danger {
+  background: var(--red-600);
+  color: var(--n-0);
+}
+
+.call-button-danger:hover {
+  background: var(--red-700);
+}
+
+.call-button-accept {
+  background: var(--green-600);
+  color: var(--n-0);
+}
+
+.call-button-accept:hover {
+  background: color-mix(in srgb, var(--green-600) 82%, var(--n-950));
+}
+
+.call-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.call-control-label {
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------- ending -- */
+
+.call-ending {
+  position: relative;
+  z-index: 3;
+  margin: auto var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom));
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(100% - 2 * var(--space-4), 26rem);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+  text-align: start;
+}
+
+.call-ending-title {
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+}
+
+.call-ending-body {
+  color: var(--text-muted);
+  line-height: var(--leading-snug);
+}
+
+.call-ending-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.call-ending-actions > .btn {
+  flex: 1 1 auto;
+}
+
+/* -------------------------------------------------------------- incoming -- */
+
+.call-incoming-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: var(--overlay);
+  animation: fade-in var(--duration-fast) var(--ease-out);
+}
+
+.call-incoming {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 22rem;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  animation: modal-in var(--duration-slow) var(--ease-out);
+}
+
+.call-incoming .avatar {
+  animation: call-pulse 1.6s var(--ease-in-out) infinite;
+}
+
+@keyframes call-pulse {
+  50% {
+    box-shadow: 0 0 0 var(--space-2) color-mix(in srgb, var(--green-600) 25%, transparent);
+  }
+}
+
+.call-incoming-name {
+  max-width: 100%;
+  font-size: var(--step-2);
+  font-weight: var(--weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.call-incoming-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-muted);
+}
+
+.call-incoming-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-7);
+  margin-block: var(--space-3) var(--space-1);
+}
+
+/* ------------------------------------------------------------- minimised -- */
+
+.call-bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: calc(var(--space-1) + env(safe-area-inset-top)) var(--space-4) var(--space-1);
+  border: none;
+  background: var(--green-600);
+  color: var(--n-0);
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  text-align: start;
+  cursor: pointer;
+}
+
+.call-bar:hover {
+  background: color-mix(in srgb, var(--green-600) 88%, var(--n-950));
+}
+
+.call-bar:focus-visible {
+  outline: var(--ring-width) solid var(--n-0);
+  outline-offset: calc(-1 * var(--ring-width) * 2);
+}
+
+.call-bar-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--n-0);
+  animation: call-blink 1.4s var(--ease-in-out) infinite;
+}
+
+@keyframes call-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.call-bar-name {
+  font-weight: var(--weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.call-bar-status {
+  font-variant-numeric: tabular-nums;
+}
+
+.call-bar-hint {
+  margin-inline-start: auto;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+/*
+ * Five controls stay on one row down to the narrowest phone: a second row
+ * would push hang-up off its place and under the self view.
+ */
+@media (max-width: 26rem) {
+  .call-controls {
+    gap: var(--space-3);
+  }
+
+  .call-button {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .call-self-view {
+    inset-block-end: calc(3.25rem + var(--space-5) + var(--space-3) + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 22rem) {
+  .call-bar-hint {
+    display: none;
+  }
+
+  .call-controls {
+    gap: var(--space-2);
+    padding-inline: var(--space-3);
+  }
+
+  .call-button {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .call-self-view {
+    inset-block-end: calc(3rem + var(--space-5) + var(--space-3) + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .call-screen,
+  .call-incoming,
+  .call-incoming-backdrop,
+  .call-incoming .avatar,
+  .call-bar-dot {
+    animation: none;
+  }
+}

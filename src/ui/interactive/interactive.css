@@ -1,0 +1,142 @@
+/* Polls and checklists, which arrive with their chunk (ADR-061). */
+
+/*
+ * Drawn with currentColor so one set of rules reads on both bubbles: light
+ * lines on the accent-filled outgoing bubble, dark ones on the incoming one,
+ * in every theme, without a second palette to keep in step.
+ */
+.poll,
+.checklist {
+  display: grid;
+  gap: var(--space-2);
+  min-inline-size: min(16rem, 62vw);
+  white-space: normal;
+}
+
+.poll-question {
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+}
+
+.poll .hint,
+.checklist .hint {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.poll-options,
+.checklist-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.poll-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  inline-size: 100%;
+  min-block-size: var(--control-sm);
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width) solid color-mix(in srgb, currentColor 28%, transparent);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.poll-option:hover {
+  border-color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.poll-option.mine {
+  border-color: currentColor;
+}
+
+/* Fills from the reading edge: rightwards in English, leftwards in Persian. */
+.poll-bar {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: -1;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  transition: inline-size var(--duration-slow) var(--ease-out);
+}
+
+.poll-mark {
+  display: grid;
+  place-items: center;
+  inline-size: 1rem;
+  block-size: 1rem;
+  flex: none;
+  border: var(--border-width) solid color-mix(in srgb, currentColor 45%, transparent);
+  border-radius: var(--radius-full);
+}
+
+.poll-option.mine .poll-mark {
+  border-color: currentColor;
+}
+
+.poll-label {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.poll-count {
+  flex: none;
+  font-size: var(--step--1);
+  opacity: 0.8;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding-block: var(--space-0-5);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.checklist-item .checkbox {
+  margin-block-start: 0.2em;
+}
+
+.checklist-item.done > span {
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+
+.checklist-add {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.checklist-add .input {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: var(--control-sm);
+  padding-block: var(--space-1);
+  font-size: var(--step--1);
+}
+
+.composer-lines {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poll-bar {
+    transition: none;
+  }
+}

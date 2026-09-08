@@ -1,0 +1,402 @@
+/* Locations, which arrive with their chunk (ADR-064). */
+
+/* ------------------------------------------------------------------- map -- */
+
+/*
+ * A map drawn from positions alone. Its ground is a pale wash of the accent
+ * over the raised surface — a panel of its own on either bubble, in either
+ * theme — and everything on it is drawn from the same role tokens.
+ */
+.map {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface-2));
+  color: var(--text);
+}
+
+.map svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  font-family: var(--font-sans);
+}
+
+.map-interactive svg {
+  cursor: grab;
+  /* A drag moves the map, not the page underneath it. */
+  touch-action: none;
+}
+
+.map-interactive svg:active {
+  cursor: grabbing;
+}
+
+.map-interactive svg:focus-visible {
+  outline: var(--ring-width) solid var(--ring);
+  outline-offset: calc(-1 * var(--ring-width));
+}
+
+.map-waiting {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+}
+
+.map-ground {
+  fill: color-mix(in srgb, var(--accent-soft) 45%, var(--surface-2));
+}
+
+.map-grid line {
+  stroke: color-mix(in srgb, var(--text) 9%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-trail {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.55;
+}
+
+.map-halo {
+  fill: var(--accent);
+  fill-opacity: 0.13;
+  stroke: var(--accent);
+  stroke-opacity: 0.45;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-beam {
+  fill: var(--accent);
+}
+
+.map-beam path {
+  opacity: 0.16;
+}
+
+.map-beam path + path {
+  opacity: 0.3;
+}
+
+.map-pin path {
+  fill: var(--danger);
+  stroke: var(--surface);
+  stroke-width: 1.5;
+}
+
+.map-pin circle {
+  fill: var(--surface);
+}
+
+.map-self {
+  fill: var(--accent);
+  stroke: var(--surface);
+  stroke-width: 2.5;
+}
+
+.map-live-dot {
+  stroke: var(--surface);
+  stroke-width: 2.5;
+}
+
+.map-live-initials {
+  fill: #fff;
+  font-size: 9px;
+  font-weight: var(--weight-semibold);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* Still being shared, and heard from recently. */
+.map-pulse {
+  opacity: 0.45;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: map-pulse 2s var(--ease-out) infinite;
+}
+
+@keyframes map-pulse {
+  to {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+.map-north path {
+  fill: var(--text-muted);
+}
+
+.map-north text,
+.map-scale text {
+  fill: var(--text-muted);
+  font-size: 8.5px;
+  font-weight: var(--weight-medium);
+  text-anchor: middle;
+}
+
+.map-scale text {
+  text-anchor: start;
+}
+
+/* The label grows away from the frame's left edge in either direction:
+   written right to left, its start is its right end. */
+:root[dir='rtl'] .map-scale text {
+  text-anchor: end;
+}
+
+.map-scale path {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+}
+
+/* On the map's left in either direction: the map does not mirror, and its
+   north arrow keeps the top right. */
+.map-controls {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  display: grid;
+  gap: var(--space-1);
+}
+
+.map-control {
+  display: grid;
+  place-items: center;
+  inline-size: var(--control-sm);
+  block-size: var(--control-sm);
+  padding: 0;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+  font: inherit;
+  font-size: var(--step-1);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.map-control:hover {
+  background: var(--surface-hover);
+}
+
+.map-control svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+/* ------------------------------------------------------------------ card -- */
+
+.location-card {
+  display: grid;
+  gap: var(--space-2);
+  inline-size: 17rem;
+  max-inline-size: 100%;
+  white-space: normal;
+}
+
+.location-map {
+  display: block;
+  inline-size: 100%;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  cursor: pointer;
+}
+
+.location-map:focus-visible {
+  outline: var(--ring-width) solid currentColor;
+  outline-offset: var(--ring-offset);
+}
+
+.location-caption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.location-lines {
+  display: grid;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.location-title {
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.location-detail {
+  font-size: var(--step--1);
+  opacity: 0.8;
+}
+
+.location-viewer .location-detail {
+  margin: 0;
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+.location-countdown {
+  flex: none;
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
+}
+
+.location-countdown svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.ring-track,
+.ring-left {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+}
+
+.ring-track {
+  opacity: 0.22;
+}
+
+.ring-left {
+  stroke-linecap: round;
+  transition: stroke-dasharray var(--duration-slow) linear;
+}
+
+.location-countdown text {
+  fill: currentColor;
+  font-size: 15px;
+  text-anchor: middle;
+}
+
+/* Drawn in the bubble's own ink, so it reads on either side's colour. */
+.location-stop {
+  inline-size: 100%;
+  min-block-size: var(--control-sm);
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width) solid color-mix(in srgb, currentColor 35%, transparent);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.location-stop:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+/* --------------------------------------------------------- sheet, picker -- */
+
+.location-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-2);
+}
+
+.location-live-choices {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-inline-size: 0;
+}
+
+.location-durations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+/* Two to a row at phone width, so a longer choice wraps inside its button
+   rather than running past it. The sheet's own buttons do the same. */
+.location-durations .btn,
+.location-actions .btn {
+  padding-inline: var(--space-2);
+  padding-block: var(--space-1);
+  line-height: var(--leading-tight);
+  text-align: center;
+  white-space: normal;
+}
+
+.location-picker .link-button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.location-privacy {
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------- banner -- */
+
+.live-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-4);
+  border-block-end: var(--border-width) solid var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: var(--step--1);
+}
+
+.live-banner-dot {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  flex: none;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  animation: live-blink 1.6s var(--ease-in-out) infinite;
+}
+
+@keyframes live-blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.live-banner-text {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.live-banner-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.live-banner-link:hover {
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-pulse,
+  .live-banner-dot {
+    animation: none;
+  }
+}

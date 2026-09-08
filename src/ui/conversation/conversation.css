@@ -1,0 +1,35 @@
+/* The sheets a conversation opens on request (ADR-061). */
+
+.forward-list {
+  max-height: min(24rem, 60dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-inline: calc(-1 * var(--space-5));
+}
+
+.forward-list .list-row {
+  padding-inline: var(--space-5);
+}
+
+.info-list {
+  display: grid;
+  gap: var(--space-3);
+  margin-block-end: var(--space-4);
+}
+
+.info-pair {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.info-pair dt {
+  color: var(--text-muted);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.info-pair dd {
+  margin: 0;
+  text-align: end;
+}

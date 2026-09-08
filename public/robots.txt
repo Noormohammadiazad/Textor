@@ -1,0 +1,4 @@
+# Textor is a static app and holds no server-side user content to index.
+# Everything meaningful lives behind a passphrase in the visitor's own browser.
+User-agent: *
+Allow: /

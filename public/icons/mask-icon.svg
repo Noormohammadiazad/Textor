@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="9 12 46 41">
+  <!--
+    Safari pinned-tab glyph. Solid black on transparent, per Apple's guidance.
+    Safari renders it near 16px and recolours it, so this is the bubble
+    silhouette alone — the internal link would be sub-pixel there, and a glyph
+    that turns to noise is worse than one that is merely simple.
+
+    The viewBox is cropped to the glyph's own bounds rather than the badge's, so
+    Safari scales the bubble to fill its 16pt slot instead of padding it.
+  -->
+  <polygon points="22,34 34,34 16.5,52"/>
+  <rect x="10" y="13" width="44" height="27" rx="9"/>
+</svg>
