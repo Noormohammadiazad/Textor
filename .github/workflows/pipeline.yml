@@ -1,0 +1,150 @@
+name: Textor Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Read-only by default; the deploy job widens this for itself alone.
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Typecheck, lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` installs exactly the committed lockfile: a build that silently
+      # picked up a different dependency tree would defeat reproducibility.
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Design token check
+        run: npm run check:tokens
+
+      - name: Test
+        run: npm run test
+
+      # A vulnerable dependency in a messenger is a vulnerability in the messenger.
+      - name: Dependency audit
+        run: npm audit --audit-level=moderate
+
+  deploy:
+    name: Build and publish to Pages
+    # Only the default branch deploys. Pull requests stop after `verify`.
+    if: github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    # Never cancel an in-flight deployment; let it finish and queue the next.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/configure-pages@v5
+        id: pages
+
+      # Every asset URL, the manifest scope, and the service-worker scope all
+      # derive from this, so getting it wrong breaks the whole deployment.
+      # Done in shell rather than an inline expression because the raw output
+      # is inconsistent: it can be "/repo", "repo", "/", or empty, and naively
+      # appending a slash turns "/" into "//".
+      - name: Resolve base path
+        id: base
+        env:
+          RAW_BASE: ${{ steps.pages.outputs.base_path }}
+          CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
+        run: |
+          set -euo pipefail
+          if [ -n "${CUSTOM_DOMAIN}" ]; then
+            # A custom domain always serves from the root, whatever Pages
+            # currently reports for the repository.
+            base="/"
+          else
+            base="${RAW_BASE:-/}"
+            base="/${base#/}"        # ensure exactly one leading slash
+            base="${base%/}/"        # ensure exactly one trailing slash
+            [ "${base}" = "//" ] && base="/"
+          fi
+          echo "path=${base}" >> "$GITHUB_OUTPUT"
+          echo "Building for base path: ${base}"
+
+      - name: Build
+        env:
+          BASE_PATH: ${{ steps.base.outputs.path }}
+          # Point the in-app "source code" link and the crash screen at whatever
+          # repository this build actually came from. A fork that left it
+          # pointing upstream would be inviting users to audit code other than
+          # the code they are running.
+          VITE_SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}
+          # Pin the build clock to the commit so the bundle is reproducible from
+          # a given tag. Vite accepts either epoch seconds or an ISO string.
+          SOURCE_DATE_EPOCH: ${{ github.event.head_commit.timestamp || '' }}
+        run: npm run build:only
+
+      # A custom domain is opt-in, set once as a repository variable, because a
+      # CNAME file committed to the repo would follow every fork — telling
+      # GitHub Pages to serve someone else's deployment at a domain they do not
+      # own, which breaks their own *.github.io URL.
+      - name: Apply custom domain
+        if: vars.CUSTOM_DOMAIN != ''
+        run: echo "${{ vars.CUSTOM_DOMAIN }}" > dist/CNAME
+
+      # Deploying a bundle that reaches for a CDN, ships an inline script, or
+      # has lost its CSP would be worse than not deploying at all.
+      - name: Check the bundle ships no third-party origins
+        run: node scripts/check-bundle.mjs
+
+      - name: Record build provenance
+        run: |
+          {
+            echo "commit: ${GITHUB_SHA}"
+            echo "ref: ${GITHUB_REF}"
+            echo "built_by: github-actions"
+            echo ""
+            echo "sha256 of every deployed file:"
+            find dist -type f | sort | xargs sha256sum
+          } > dist/BUILD-INFO.txt
+          cat dist/BUILD-INFO.txt
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

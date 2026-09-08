@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Textor">
+  <!--
+    Textor mark.
+
+    A message bubble whose contents are a direct link between two peers — the
+    one idea that separates this app from other messengers: the message goes
+    from you to them, not through anyone's server.
+
+    Three shapes and one colour pair. No gradient, no shadow, no second accent:
+    at 16 pixels the badge and the bubble silhouette are all that survive, and
+    the link degrades cleanly into a single dark band rather than into mud.
+
+    Built from analytic primitives — rounded rectangles, a triangle, two circles
+    — so scripts/generate-icons.mjs can reproduce it pixel-exactly from the same
+    numbers instead of approximating a path.
+
+    Grid 64. Badge 0..64. Bubble 10..54 x 13..40, centred on x=32. Link centred
+    on the bubble at y=26.5.
+  -->
+  <rect width="64" height="64" rx="14" fill="#1a56b8"/>
+  <g fill="#fff">
+    <polygon points="22,34 34,34 16.5,52"/>
+    <rect x="10" y="13" width="44" height="27" rx="9"/>
+  </g>
+  <g fill="#1a56b8">
+    <rect x="23" y="25.1" width="18" height="2.8" rx="1.4"/>
+    <circle cx="23" cy="26.5" r="3.5"/>
+    <circle cx="41" cy="26.5" r="3.5"/>
+  </g>
+</svg>
